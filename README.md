@@ -1,6 +1,6 @@
 # Elastx Drupal 7
 
-This is an example on how to work with jelastic cloudscripting in our plattform. A simple, soon to be performant Drupal site.
+This is an example on how to work with jelastic cloudscripting in our plattform. A simple, soon to be performant Drupal 7 site.
 
 ## Fork it, PR us
 
