@@ -1,0 +1,163 @@
+{
+  "jpsType": "install",
+  "jpsVersion":"0.3",
+  "application": {
+    "name": "Elastx Drupal 7",
+    "version": "0.9",
+    "logo": "https://raw.githubusercontent.com/tjakobsson/drupal7-jps/master/img/drupal-logo.png",
+    "homepage": "https://github.com/tjakobsson/drupal7-jps",
+    "description":"Drupal with som performance enhancements",
+    "type": "php",
+    "settings": {
+      "fields": [{      
+        "type": "string",
+        "name": "drupal_admin",
+        "caption": "Set username",
+        "required": "true",
+      },{
+        "type": "string",
+        "name": "drupal_password",
+        "caption": "Set password",
+        "required": "true",
+      },{
+        "type": "string",
+        "name": "drupal_email",
+        "caption": "Set admin e-mail",
+        "required": "true",
+      }]
+    },
+    "env": {
+      "topology": {
+        "engine": "php5.5",
+        "nodes": [{
+            "nodeType": "nginxphp",
+            "count": 1,
+            "cloudlets": 16
+          },{
+            "nodeType": "mariadb10",
+            "extip": false,
+            "cloudlets": 16
+          }
+        ]
+      }
+    },
+    "onInstall": {
+      "call": [
+        "configureNginx",
+        "cleanBeforeSetup",
+        "installComposer",
+        "installDrush",
+        "downloadDrupal",
+        "installDrupal"
+      ]
+    },
+    "procedures": [{
+      "id": "cleanBeforeSetup",
+      "onCall": [{
+        "executeShellCommands": [{
+          "nodeMission": "cp",
+          "commands": [
+            "cd /var/www/webroot/ROOT",
+            "rm -rf index.php",
+          ]
+        }]
+      }]
+    },{
+      "id": "installComposer",
+      "onCall": [{
+        "executeShellCommands": [{
+          "nodeMission": "cp",
+          "commands": [
+            "cd /var/www/webroot/ROOT",
+            "rm -rf index.php",
+            "cd /var/lib/nginx",
+            "mkdir bin",
+            "cd bin",
+            "curl -sS https://getcomposer.org/installer | php 2>&1 | tee -a ~/install.log",
+            "ln -s composer.phar composer",
+            "echo \"export PATH=$PATH:/var/lib/nginx/bin\" >>/var/lib/nginx/.bash_profile",
+          ]
+        }]
+      }]
+    },{
+      "id": "installDrush",
+      "onCall": [{
+        "executeShellCommands": [{
+          "nodeMission": "cp",
+          "commands": [
+            "cd /var/lib/nginx/bin",
+            "source /var/lib/nginx/.bash_profile",
+            "composer global require drush/drush:dev-master 2>&1 >/dev/null",
+            "echo \"export PATH=$PATH:~/.composer/vendor/drush/drush/\" >>/var/lib/nginx/.bash_profile",
+          ]
+        }]
+      }]
+    },{
+      "id": "downloadDrupal",
+      "onCall": [{
+        "executeShellCommands": [{
+          "nodeMission": "cp",
+          "commands": [
+            "source /var/lib/nginx/.bash_profile",
+            "mysql -uroot -p${nodes.sqldb.password} -h${nodes.sqldb[0].address} -e \"CREATE DATABASE drupal;GRANT ALL PRIVILEGES ON drupal.* TO drupal@'%' IDENTIFIED BY '${nodes.sqldb.password}';\" 2>&1 >/dev/null",
+            "cd /var/www/webroot/",
+            "rmdir ROOT",
+            "drush dl drupal-7 --destination=/var/www/webroot/ --drupal-project-rename=ROOT 2>&1 | tee -a ~/install.log",
+            "cd ROOT",
+            "drush -y si standard --db-url=mysql://drupal:${nodes.sqldb.password}@${nodes.sqldb[0].address}/drupal --site-name=\"Elastx Drupal\" --account-name=\"${settings.drupal_admin}\" --account-pass=\"${settings.drupal_password}\" --account-mail=\"${settings.drupal_email}\" 2>&1 | tee -a ~/install.log",
+          ]
+        }]
+      }]
+    },{
+      "id": "installDrupal",
+      "onCall": [{
+        "executeShellCommands": [{
+          "nodeMission": "cp",
+          "commands": [
+            "cd /var/www/webroot/ROOT",
+	    "true"
+          ]
+        }]
+      }]
+    },{
+      "id": "configureNginx",
+      "onCall": [{
+        "executeShellCommands": [{
+          "nodeMission": "cp",
+          "commands": [
+            "curl -fs https://raw.githubusercontent.com/tjakobsson/drupal7-jps/master/conf/nginx/nginx.conf.tpl | sed 's/__DOMAIN/${env.domain}/' > /etc/nginx/nginx.conf",
+          ]
+        }]
+      }, {
+        "replaceInFile": [{
+          "nodeMission": "cp",
+          "path": "/etc/php.ini",
+          "replacements": [{
+            "pattern": "xcache.size = \"32M\"",
+            "replacement": "xcache.size = \"64M\""
+          }, {
+            "pattern": "; extension = xcache.so",
+            "replacement": "extension = xcache.so"
+          }, {
+            "pattern": "upload_max_filesize = 2M",
+            "replacement": "upload_max_filesize = 20M"
+          }, {
+            "pattern": "post_max_size = 8M",
+            "replacement": "post_max_size = 20M"
+          }, {
+            "pattern": "mbstring.encoding_translation = On",
+            "replacement":"mbstring.encoding_translation = Off"
+          }, {
+            "pattern": ";extension=gd.so",
+            "replacement":"extension=gd.so"
+          }]
+        }]
+      }, {
+        "restartNodes": [{
+          "nodeMission": "cp"
+        }]
+      }]
+    }],
+    "success": "You can now manage your Drupal site at <a href='${env.protocol}://${env.domain}/user/' style='color: #f7d600; text-decoration: none;' target='_blank'>${env.protocol}://${env.domain}/user/</a> with username \"${settings.drupal_admin}\" and password \"${settings.drupal_password}\""
+  }
+}
