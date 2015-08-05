@@ -4,8 +4,8 @@
   "application": {
     "name": "Elastx Drupal 7",
     "version": "0.9",
-    "logo": "https://raw.githubusercontent.com/tjakobsson/drupal7-jps/master/img/drupal-logo.png",
-    "homepage": "https://github.com/tjakobsson/drupal7-jps",
+    "logo": "https://raw.githubusercontent.com/elastx/drupal7-jps/master/img/drupal-logo.png",
+    "homepage": "https://github.com/elastx/drupal7-jps",
     "description":"Drupal with som performance enhancements",
     "type": "php",
     "settings": {
@@ -125,7 +125,7 @@
         "executeShellCommands": [{
           "nodeMission": "cp",
           "commands": [
-            "curl -fs https://raw.githubusercontent.com/tjakobsson/drupal7-jps/master/conf/nginx/nginx.conf.tpl | sed 's/__DOMAIN/${env.domain}/' > /etc/nginx/nginx.conf",
+            "curl -fs https://raw.githubusercontent.com/elastx/drupal7-jps/master/conf/nginx/nginx.conf.tpl | sed 's/__DOMAIN/${env.domain}/' > /etc/nginx/nginx.conf",
           ]
         }]
       }, {
