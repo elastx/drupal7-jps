@@ -13,17 +13,17 @@
         "type": "string",
         "name": "drupal_admin",
         "caption": "Set username",
-        "required": "true",
+        "required": "true"
       },{
         "type": "string",
         "name": "drupal_password",
         "caption": "Set password",
-        "required": "true",
+        "required": "true"
       },{
         "type": "string",
         "name": "drupal_email",
         "caption": "Set admin e-mail",
-        "required": "true",
+        "required": "true"
       }]
     },
     "env": {
@@ -58,7 +58,7 @@
           "nodeMission": "cp",
           "commands": [
             "cd /var/www/webroot/ROOT",
-            "rm -rf index.php",
+            "rm -rf index.php"
           ]
         }]
       }]
@@ -75,7 +75,7 @@
             "cd bin",
             "curl -sS https://getcomposer.org/installer | php 2>&1 | tee -a ~/install.log",
             "ln -s composer.phar composer",
-            "echo \"export PATH=$PATH:/var/lib/nginx/bin\" >>/var/lib/nginx/.bash_profile",
+            "echo \"export PATH=$PATH:/var/lib/nginx/bin\" >>/var/lib/nginx/.bash_profile"
           ]
         }]
       }]
@@ -88,7 +88,7 @@
             "cd /var/lib/nginx/bin",
             "source /var/lib/nginx/.bash_profile",
             "composer global require drush/drush:dev-master 2>&1 >/dev/null",
-            "echo \"export PATH=$PATH:~/.composer/vendor/drush/drush/\" >>/var/lib/nginx/.bash_profile",
+            "echo \"export PATH=$PATH:~/.composer/vendor/drush/drush/\" >>/var/lib/nginx/.bash_profile"
           ]
         }]
       }]
@@ -99,12 +99,12 @@
           "nodeMission": "cp",
           "commands": [
             "source /var/lib/nginx/.bash_profile",
-            "mysql -uroot -p${nodes.sqldb.password} -h${nodes.sqldb[0].address} -e \"CREATE DATABASE drupal;GRANT ALL PRIVILEGES ON drupal.* TO drupal@'%' IDENTIFIED BY '${nodes.sqldb.password}';\" 2>&1 >/dev/null",
+            "mysql -uroot -p${nodes.sqldb.password} -h${nodes.sqldb[0].address} -e \"CREATE DATABASE drupal;GRANT ALL PRIVILEGES ON drupal.* TO root@'%' IDENTIFIED BY '${nodes.sqldb.password}';\" 2>&1 >/dev/null",
             "cd /var/www/webroot/",
             "rmdir ROOT",
             "drush dl drupal-7 --destination=/var/www/webroot/ --drupal-project-rename=ROOT 2>&1 | tee -a ~/install.log",
             "cd ROOT",
-            "drush -y si standard --db-url=mysql://drupal:${nodes.sqldb.password}@${nodes.sqldb[0].address}/drupal --site-name=\"Elastx Drupal\" --account-name=\"${settings.drupal_admin}\" --account-pass=\"${settings.drupal_password}\" --account-mail=\"${settings.drupal_email}\" 2>&1 | tee -a ~/install.log",
+            "drush -y si standard --db-url=mysql://root:${nodes.sqldb.password}@${nodes.sqldb[0].address}/drupal --site-name=\"Elastx Drupal\" --account-name=\"${settings.drupal_admin}\" --account-pass=\"${settings.drupal_password}\" --account-mail=\"${settings.drupal_email}\" 2>&1 | tee -a ~/install.log"
           ]
         }]
       }]
@@ -125,7 +125,7 @@
         "executeShellCommands": [{
           "nodeMission": "cp",
           "commands": [
-            "curl -fs https://raw.githubusercontent.com/elastx/drupal7-jps/master/conf/nginx/nginx.conf.tpl | sed 's/__DOMAIN/${env.domain}/' > /etc/nginx/nginx.conf",
+            "curl -fs https://raw.githubusercontent.com/elastx/drupal7-jps/master/conf/nginx/nginx.conf.tpl | sed 's/__DOMAIN/${env.domain}/' > /etc/nginx/nginx.conf"
           ]
         }]
       }, {
